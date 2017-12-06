@@ -15,8 +15,21 @@ class lustre::server(
     'lustre-resource-agents',
     'fence-agents-all',
   ]:}
-  file { '/etc/modprobe.d/zfs.conf':
-    content => "options spl spl_hostid=${spl_hostid}",
+  file { '/etc/modprobe.d/spl.conf':
+    content => "options spl spl_hostid=${spl_hostid}
+",
+  }
+  -> file { '/etc/modprobe.d/zfs.conf':
+    content => "options zfs metaslab_debug_unload=1
+options zfs zfs_vdev_scheduler=deadline
+options zfs zfs_arc_max=${sprintf("%i", $::memory[system][total_bytes]*0.75)}
+options zfs zfs_dirty_data_max=2147483648
+options zfs zfs_vdev_async_write_active_min_dirty_percent=20
+options zfs zfs_vdev_async_write_min_active=5
+options zfs zfs_vdev_async_write_max_active=10
+options zfs zfs_vdev_sync_read_min_active=16
+options zfs zfs_vdev_sync_read_max_active=16
+",
   }
   -> exec { 'modprobe zfs':
     command => '/usr/sbin/modprobe zfs',

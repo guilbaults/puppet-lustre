@@ -11,7 +11,7 @@ class lustre::oss(
   $mgs_nodes_str = join(prefix(hiera(lustre::mgs::service_nodes), '--mgsnode '), ' ')
 
   $ost.each | $ost | {
-    # For each MDT on this MDS
+    # For each OST on this OSS
     $index = $ost[index]
     $format_array = $ost[drives].map | $drives | {
       $drives_str = join($drives, ' ')
@@ -25,6 +25,9 @@ class lustre::oss(
 
     exec { "Creating OST${index} pool with ZFS":
       command => "/usr/sbin/zpool create \
+-f \
+-O recordsize=1024k \
+-O dnodesize=auto \
 -O canmount=off \
 -o multihost=on \
 -o cachefile=none \
