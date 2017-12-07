@@ -1,6 +1,7 @@
 class lustre::mgs(
   $mgt,
   $service_nodes,
+  $prefered_host,
   $raid_level = 'mirror',
   $ashift = '12',
   $compression = 'lz4'
@@ -60,6 +61,11 @@ ${service_nodes_str}",
   }
   -> cs_group { 'MGT':
     primitives => ['ZFS_MGT', 'lustre_MGT']
+  }
+  -> cs_location { "prefered_host_MGT${index}":
+    primitive => 'MGT',
+    node_name => $prefered_host,
+    score     => '50',
   }
 }
 

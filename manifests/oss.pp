@@ -13,6 +13,7 @@ class lustre::oss(
   $ost.each | $ost | {
     # For each OST on this OSS
     $index = $ost[index]
+    $prefered_host = $ost[prefered_host]
     $format_array = $ost[drives].map | $drives | {
       $drives_str = join($drives, ' ')
       $array_str = "${raid_level} ${drives_str}"
@@ -74,6 +75,11 @@ ${lustre::server::fsname}-ost${index}/ost${index}",
     }
     -> cs_group { "OST${index}":
       primitives => ["ZFS_OST${index}", "lustre_OST${index}"]
+    }
+    -> cs_location { "prefered_host_OST${index}":
+      primitive => "OST${index}",
+      node_name => $prefered_host,
+      score     => '50',
     }
   } # END of OST $index
 }

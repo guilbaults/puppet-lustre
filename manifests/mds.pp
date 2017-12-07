@@ -13,6 +13,7 @@ class lustre::mds(
   $mdt.each | $mdt | {
     # For each MDT on this MDS
     $index = $mdt[index]
+    $prefered_host = $mdt[index]
     $format_array = $mdt[drives].map | $drives | {
       $drives_str = join($drives, ' ')
       $array_str = "${raid_level} ${drives_str}"
@@ -73,6 +74,11 @@ ${lustre::server::fsname}-mdt${index}/mdt${index}",
     }
     -> cs_group { "MDT${index}":
       primitives => ["ZFS_MDT${index}", "lustre_MDT${index}"]
+    }
+    -> cs_location { "prefered_host_MDT${index}":
+      primitive => "MDT${index}",
+      node_name => $prefered_host,
+      score     => '50',
     }
   } # END of MDT $index
 }
