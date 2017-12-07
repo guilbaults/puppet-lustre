@@ -77,12 +77,15 @@ options zfs zfs_vdev_sync_read_max_active=16
         'login'          => $user,
         'passwd'         => $password,
         'ipaddr'         => $ipaddr,
+        'method'         => 'onoff',
+        'lanplus'        => true,
+        'power_wait'     => '5',
       },
     }
   }
 
   cs_rsc_defaults { 'resource-stickiness' :
-    value => 'INFINITY',
+    value => '100',
   }
 }
 
