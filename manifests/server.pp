@@ -6,6 +6,7 @@ class lustre::server(
   $zfs_heartbeat_script='https://raw.githubusercontent.com/ClusterLabs/resource-agents/master/heartbeat/ZFS',
 ){
   include lustre
+  include lustre::ldev
   include corosync
   package {[
     'lustre',
