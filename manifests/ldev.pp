@@ -14,9 +14,9 @@ class lustre::ldev(
   }
 
   $devs.each | $dev | {
-    concat::fragment { "ldev line $dev":
+    concat::fragment { "ldev line ${dev}":
       target  => '/etc/ldev.conf',
-      content => "$dev
+      content => "${dev}
 ",
       order   => 50,
     }

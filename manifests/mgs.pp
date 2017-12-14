@@ -62,7 +62,7 @@ ${service_nodes_str}",
   -> cs_group { 'MGT':
     primitives => ['ZFS_MGT', 'lustre_MGT']
   }
-  -> cs_location { "prefered_host_MGT${index}":
+  -> cs_location { 'prefered_host_MGT':
     primitive => 'MGT',
     node_name => $prefered_host,
     score     => '50',
