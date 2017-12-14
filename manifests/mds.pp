@@ -33,7 +33,8 @@ class lustre::mds(
 -O compression=${compression} \
 ${lustre::server::fsname}-mdt${index} \
 ${format_str}",
-      unless  => "/usr/sbin/blkid ${drives_str} | /usr/bin/grep zfs",
+      unless  => ['/usr/bin/test ! -f /tmp/puppet_can_erase',
+                  "/usr/sbin/blkid ${drives_str} | /usr/bin/grep zfs"],
       require => Class['luks'],
     }
     ~> exec { "Formating the MDT${index} with Lustre":
@@ -46,6 +47,7 @@ ${service_nodes_str} \
 ${mgs_nodes_str} \
 ${lustre::server::fsname}-mdt${index}/mdt${index}",
       refreshonly => true,
+      onlyif      => '/usr/bin/test -f /tmp/puppet_can_erase',
     }
     -> file { "/mnt/mdt${index}":
       ensure => 'directory',

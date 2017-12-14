@@ -36,7 +36,8 @@ class lustre::oss(
 -O compression=${compression} \
 ${lustre::server::fsname}-ost${index} \
 ${format_str}",
-      unless  => "/usr/sbin/blkid ${drives_str} | /usr/bin/grep zfs",
+      unless  => ['/usr/bin/test ! -f /tmp/puppet_can_erase',
+                  "/usr/sbin/blkid ${drives_str} | /usr/bin/grep zfs"],
       require => Class['luks'],
     }
     ~> exec { "Formating the OST${index} with Lustre":
@@ -49,6 +50,7 @@ ${service_nodes_str} \
 ${mgs_nodes_str} \
 ${lustre::server::fsname}-ost${index}/ost${index}",
       refreshonly => true,
+      onlyif      => '/usr/bin/test -f /tmp/puppet_can_erase',
     }
     -> file { "/mnt/ost${index}": ensure => 'directory' }
     -> cs_primitive { "ZFS_OST${index}":
