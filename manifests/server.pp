@@ -16,6 +16,11 @@ class lustre::server(
     'lustre-resource-agents',
     'fence-agents-all',
   ]:}
+
+  exec { '/usr/bin/echo Warning, puppet is allowed to format drives':
+    unless => '/usr/bin/test ! -f /tmp/puppet_can_erase',
+  }
+
   file { '/etc/modprobe.d/spl.conf':
     content => "options spl spl_hostid=${spl_hostid}
 ",

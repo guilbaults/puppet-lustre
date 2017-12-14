@@ -19,7 +19,8 @@ class lustre::mgs(
 -O compression=${compression} \
 ${lustre::server::fsname}-mgt \
 ${lustre::mgs::raid_level} ${drives_str}",
-    unless  => "/usr/sbin/blkid ${drives_str} | /usr/bin/grep zfs",
+    unless  => ['/usr/bin/test ! -f /tmp/puppet_can_erase',
+                "/usr/sbin/blkid ${drives_str} | /usr/bin/grep zfs"],
     require => Class['luks'],
   }
   ~> exec { 'Formating the MGT with Lustre':
@@ -29,6 +30,7 @@ ${lustre::mgs::raid_level} ${drives_str}",
 --mgs ${lustre::server::fsname}-mgt/mgt \
 ${service_nodes_str}",
     refreshonly => true,
+    onlyif      => '/usr/bin/test -f /tmp/puppet_can_erase',
   }
   -> file { '/mnt/mgt': ensure => 'directory' }
   -> cs_primitive { 'ZFS_MGT':

@@ -3,3 +3,5 @@
 
 # puppet-lustre
 Puppet module to install and configure Lustre
+
+Puppet is only allowed to format devices if the file `/tmp/puppet_can_erase` exist
