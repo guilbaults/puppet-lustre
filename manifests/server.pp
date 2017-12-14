@@ -23,7 +23,7 @@ class lustre::server(
   -> file { '/etc/modprobe.d/zfs.conf':
     content => "options zfs metaslab_debug_unload=1
 options zfs zfs_vdev_scheduler=deadline
-options zfs zfs_arc_max=${sprintf("%i", $::memory[system][total_bytes]*0.75)}
+options zfs zfs_arc_max=${sprintf('%i', $::memory[system][total_bytes]*0.75)}
 options zfs zfs_dirty_data_max=2147483648
 options zfs zfs_vdev_async_write_active_min_dirty_percent=20
 options zfs zfs_vdev_async_write_min_active=5

@@ -1,0 +1,7 @@
+rvm: 1.9.3
+notifications:
+  email:
+    - guilbaults@github.com
+env:
+  - PUPPET_VERSION=4.10.9
+
