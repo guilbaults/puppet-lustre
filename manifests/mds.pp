@@ -58,9 +58,9 @@ ${lustre::server::fsname}-mdt${index}/mdt${index}",
       provided_by     => 'heartbeat',
       parameters      => { 'pool' => "${lustre::server::fsname}-mdt${index}", 'importforce' => true },
       operations      => {
-        'start'   => { 'timeout' => '300s' },
-        'stop'    => { 'timeout' => '300s' },
-        'monitor' => { 'timeout' => '60s', 'interval' => '10s' },
+        'start'   => { 'timeout' => '600s' },
+        'stop'    => { 'timeout' => '600s' },
+        'monitor' => { 'timeout' => '300s', 'interval' => '60s' },
       },
     }
     -> cs_primitive { "lustre_MDT${index}":
@@ -69,9 +69,9 @@ ${lustre::server::fsname}-mdt${index}/mdt${index}",
       provided_by     => 'lustre',
       parameters      => { 'target' => "${lustre::server::fsname}-mdt${index}/mdt${index}", 'mountpoint' => "/mnt/mdt${index}" },
       operations      => {
-        'start'   => { 'timeout' => '300s' },
-        'stop'    => { 'timeout' => '300s' },
-        'monitor' => { 'timeout' => '60s' },
+        'start'   => { 'timeout' => '600s' },
+        'stop'    => { 'timeout' => '600s' },
+        'monitor' => { 'timeout' => '300s' , 'interval' => '60s' },
       },
     }
     -> cs_group { "MDT${index}":

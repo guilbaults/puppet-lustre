@@ -42,12 +42,9 @@ ${service_nodes_str}",
       'importforce' => true
     },
     operations      => {
-      'start'   => { 'timeout' => '300s' },
-      'stop'    => { 'timeout' => '300s' },
-      'monitor' => {
-        'timeout'  => '60s',
-        'interval' => '10s'
-      },
+      'start'   => { 'timeout' => '600s' },
+      'stop'    => { 'timeout' => '600s' },
+      'monitor' => { 'timeout' => '300s', 'interval' => '60s' },
     },
   }
   -> cs_primitive { 'lustre_MGT':
@@ -56,9 +53,9 @@ ${service_nodes_str}",
     provided_by     => 'lustre',
     parameters      => { 'target' => "${lustre::server::fsname}-mgt/mgt", 'mountpoint' => '/mnt/mgt' },
     operations      => {
-      'start'   => { 'timeout' => '300s' },
-      'stop'    => { 'timeout' => '300s' },
-      'monitor' => { 'timeout' => '60s' },
+      'start'   => { 'timeout' => '600s' },
+      'stop'    => { 'timeout' => '600s' },
+      'monitor' => { 'timeout' => '300s', 'interval' => '60s' },
     },
   }
   -> cs_group { 'MGT':
