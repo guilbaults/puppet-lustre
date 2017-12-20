@@ -97,5 +97,11 @@ options zfs zfs_vdev_sync_read_max_active=16
   cs_rsc_defaults { 'resource-stickiness' :
     value => '100',
   }
+  cs_rsc_defaults { 'migration-threshold' :
+    value => '5',
+  }
+  cs_rsc_defaults { 'start-failure-is-fatal' :
+    value => false,
+  }
 }
 
