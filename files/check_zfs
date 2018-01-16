@@ -1,0 +1,32 @@
+#!/bin/bash
+# Check ZFS pool state, return critical if a pool is degraded
+
+which zpool &>/dev/null
+if [ $? != 0 ]; then
+    echo "can't find zpool"
+    exit 3
+fi
+
+zpool status|egrep 'pool:|state:|scan:|to go'|tr '\n' ' '|sed 's/[a-z]*://g'|sed -e 's/ \+/ /g;s/^ //' > /tmp/check_zfs.tmp
+
+COMMENT=$(cat /tmp/check_zfs.tmp)
+NAGIOS_STATE=0 # nagios ok
+STATES="DEGRADED FAULTED OFFLINE REMOVED UNAVAIL"
+
+for STATE in $STATES; do
+    echo $COMMENT|grep -q $STATE
+    if [ $? == 0 ]; then
+        NAGIOS_STATE=2 # nagios critical
+        break
+    fi
+done
+
+# perfdata
+PDATA=$(zpool status|head|grep %|tr ',' ' '|awk '{print $2"="$3}')
+if [ "$PDATA" != "" ]; then
+    echo "$COMMENT|$PDATA"
+else
+    echo $COMMENT
+fi
+
+exit $NAGIOS_STATE``

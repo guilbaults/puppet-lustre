@@ -130,3 +130,15 @@ class lustre::server::patch_monitor() {
   }
 }
 
+class lustre::server::nrpe(){
+  nrpe::command {
+    'check_zfs':
+      ensure  => present,
+      command => 'check_zfs';
+  }
+  nrpe::plugin {
+    'check_zfs':
+      ensure => present,
+      source => 'puppet:///modules/lustre/check_zfs',
+  }
+}
