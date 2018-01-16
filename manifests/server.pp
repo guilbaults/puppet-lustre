@@ -83,7 +83,6 @@ options zfs zfs_vdev_sync_read_max_active=16
         'login'                => $user,
         'passwd'               => $password,
         'ipaddr'               => $ipaddr,
-        'action'               => 'off',
         'lanplus'              => true,
         'pcmk_reboot_retries'  => 10,
         'pcmk_off_retries'     => 10,
@@ -102,6 +101,32 @@ options zfs zfs_vdev_sync_read_max_active=16
   }
   cs_rsc_defaults { 'start-failure-is-fatal' :
     value => false,
+  }
+  cs_rsc_defaults { 'batch-limit' :
+    value => '2',
+  }
+  cs_rsc_defaults { 'migration-limit' :
+    value => '2',
+  }
+  cs_rsc_defaults { 'stonith-action' :
+    value => 'off',
+  }
+  cs_rsc_defaults { 'stonith-timeout' :
+    value => '120s',
+  }
+}
+
+class lustre::server::patch_monitor() {
+  # Without this patch, the monitor function think OST1 is running, but its 
+  # actually OST11, the whitespace force OST11 to only match OST11
+  patch::file { '/usr/lib/ocf/resource.d/lustre/Lustre':
+    diff_content => '99c99
+<     grep -q $(realpath "$OCF_RESKEY_mountpoint") /proc/mounts
+---
+>     mountpoint -q $(realpath "$OCF_RESKEY_mountpoint")
+',
+    before       => Service['corosync'],
+    require      => Package['lustre-resource-agents', 'patch'],
   }
 }
 
