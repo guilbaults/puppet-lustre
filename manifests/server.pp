@@ -119,6 +119,9 @@ options zfs zfs_vdev_sync_read_max_active=16
 class lustre::server::patch_monitor() {
   # Without this patch, the monitor function think OST1 is running, but its 
   # actually OST11, the whitespace force OST11 to only match OST11
+
+  # This bug was fixed in LU-10098 and not required on
+  # newer Lustre 2.10.3 and 2.11.0
   patch::file { '/usr/lib/ocf/resource.d/lustre/Lustre':
     diff_content => '99c99
 <     grep -q $(realpath "$OCF_RESKEY_mountpoint") /proc/mounts
