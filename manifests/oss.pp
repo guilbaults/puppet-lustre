@@ -14,6 +14,18 @@ class lustre::oss(
     # For each OST on this OSS
     $index = $ost[index]
     $prefered_host = $ost[prefered_host]
+    $scrub_schedule = $ost[scrub_schedule]
+
+    if($scrub_schedule and $prefered_host == $::hostname){
+      file { "/etc/cron.d/scrub-OST$index.cron":
+        ensure  => present,
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0644',
+        content => "${scrub_schedule} root /usr/sbin/zpool scrub ${lustre::server::fsname}-ost${index}\n";
+      }
+    }
+
     $format_array = $ost[drives].map | $drives | {
       $drives_str = join($drives, ' ')
       $array_str = "${raid_level} ${drives_str}"

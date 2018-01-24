@@ -4,9 +4,21 @@ class lustre::mgs(
   $prefered_host,
   $raid_level = 'mirror',
   $ashift = '12',
-  $compression = 'lz4'
+  $compression = 'lz4',
+  $scrub_schedule = '0 0 1 * *',
 ){
   include lustre::server
+
+  if($scrub_schedule and $prefered_host == $::hostname){
+    file { "/etc/cron.d/scrub-MGT.cron":
+      ensure  => present,
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0644',
+      content => "${scrub_schedule} root /usr/sbin/zpool scrub ${lustre::server::fsname}-mgt\n";
+      }
+    }
+
   $drives = $mgt[drives]
   $drives_str = join($drives, ' ')
   $service_nodes_str = join(prefix($service_nodes, '--servicenode '), ' ')

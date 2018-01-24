@@ -13,7 +13,19 @@ class lustre::mds(
   $mdt.each | $mdt | {
     # For each MDT on this MDS
     $index = $mdt[index]
-    $prefered_host = $mdt[index]
+    $prefered_host = $mdt[prefered_host]
+    $scrub_schedule = $mdt[scrub_schedule]
+
+    if($scrub_schedule and $prefered_host == $::hostname){
+      file { "/etc/cron.d/scrub-MDT${index}.cron":
+        ensure  => present,
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0644',
+        content => "${scrub_schedule} root /usr/sbin/zpool scrub ${lustre::server::fsname}-mdt${index}\n";
+      }
+    }
+
     $format_array = $mdt[drives].map | $drives | {
       $drives_str = join($drives, ' ')
       $array_str = "${raid_level} ${drives_str}"
