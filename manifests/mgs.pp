@@ -10,7 +10,7 @@ class lustre::mgs(
   include lustre::server
 
   if($scrub_schedule and $prefered_host == $::hostname){
-    file { "/etc/cron.d/scrub-MGT.cron":
+    file { '/etc/cron.d/scrub-MGT.cron':
       ensure  => present,
       owner   => 'root',
       group   => 'root',

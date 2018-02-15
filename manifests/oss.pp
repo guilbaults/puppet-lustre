@@ -17,7 +17,7 @@ class lustre::oss(
     $scrub_schedule = $ost[scrub_schedule]
 
     if($scrub_schedule and $prefered_host == $::hostname){
-      file { "/etc/cron.d/scrub-OST$index.cron":
+      file { "/etc/cron.d/scrub-OST${index}.cron":
         ensure  => present,
         owner   => 'root',
         group   => 'root',
