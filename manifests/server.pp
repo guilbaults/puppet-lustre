@@ -4,6 +4,7 @@ class lustre::server(
   # This heartbeat script is under GPL license and not included directly in
   # this module, OS native repo will have this script in the future.
   $zfs_heartbeat_script='https://raw.githubusercontent.com/ClusterLabs/resource-agents/master/heartbeat/ZFS',
+  $lnet_firewall=['0.0.0.0/0']
 ){
   include lustre
   include lustre::ldev
@@ -41,6 +42,16 @@ options zfs zfs_vdev_sync_read_max_active=16
     command => '/usr/sbin/modprobe zfs',
     unless  => '/usr/sbin/lsmod | /usr/bin/grep zfs',
     require => Package['kmod-lustre-osd-zfs'],
+  }
+
+  $lnet_firewall.each | String $ip | {
+    firewall { "100 allow lnet access from ${ip}":
+      dport  => 988,
+      source => $ip,
+      proto  => 'tcp',
+      action => 'accept',
+      before => Service['corosync'],
+    }
   }
 
   # TODO put in hiera a list of lustre/lnet parameters
