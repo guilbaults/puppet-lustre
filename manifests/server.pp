@@ -70,7 +70,7 @@ options zfs zfs_vdev_sync_read_max_active=16
     mode   => '0744',
     before => Service['corosync'],
   }
-  $corosync_ips = $::corosync::unicast_addresses
+  $corosync_ips = flatten($::corosync::unicast_addresses)
   $corosync_ips.each | String $corosync_ip | {
     firewall { "100 allow corosync access from ${corosync_ip}":
       dport  => 5405,
