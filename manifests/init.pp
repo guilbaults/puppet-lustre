@@ -1,3 +1,5 @@
 class lustre(
-){}
+){
+  tag 'lustre'
+}
 

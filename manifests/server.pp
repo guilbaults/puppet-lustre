@@ -1,6 +1,5 @@
 class lustre::server(
-  $fsname,
-  $spl_hostid,
+  $spl_hostid=undef,
   # This heartbeat script is under GPL license and not included directly in
   # this module, OS native repo will have this script in the future.
   $zfs_heartbeat_script='https://raw.githubusercontent.com/ClusterLabs/resource-agents/master/heartbeat/ZFS',
@@ -22,9 +21,16 @@ class lustre::server(
     unless => '/usr/bin/test ! -f /tmp/puppet_can_erase',
   }
 
-  file { '/etc/modprobe.d/spl.conf':
-    content => "options spl spl_hostid=${spl_hostid}
+  if $spl_hostid {
+    file { '/etc/modprobe.d/spl.conf':
+      content => "options spl spl_hostid=${spl_hostid}
 ",
+    }
+  }
+  else {
+    exec {'/usr/bin/echo SPL is missing for ZFS failover':
+      unless => '/usr/bin/grep spl.spl_hostid /proc/cmdline',
+    }
   }
   -> file { '/etc/modprobe.d/zfs.conf':
     content => "options zfs metaslab_debug_unload=1
@@ -62,6 +68,7 @@ options zfs zfs_vdev_sync_read_max_active=16
     command => '/usr/sbin/modprobe lustre',
     unless  => '/usr/sbin/lsmod | /usr/bin/grep lustre',
     require => [Exec['modprobe zfs'], Package['lustre'], Class['network']],
+    before  => Service['corosync'],
   }
   file { '/usr/lib/ocf/resource.d/heartbeat/ZFS':
     source => $zfs_heartbeat_script,

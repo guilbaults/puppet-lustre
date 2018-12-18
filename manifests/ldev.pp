@@ -4,7 +4,7 @@ class lustre::ldev(
 
   concat { '/etc/ldev.conf':
     ensure => present,
-    before => Exec['modprobe lustre'],
+    before => [Exec['modprobe lustre'], Service['corosync']],
   }
   concat::fragment{'header of ldev.conf':
     target  => '/etc/ldev.conf',

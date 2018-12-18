@@ -1,20 +1,21 @@
 class lustre::mds(
   $mdt,
-  $service_nodes,
   $raid_level = 'mirror',
   $ashift = '12',
   $compression = 'lz4',
 ){
   include lustre::server
 
-  $service_nodes_str = join(prefix($service_nodes, '--servicenode '), ' ')
-  $mgs_nodes_str = join(prefix(hiera(lustre::mgs::service_nodes), '--mgsnode '), ' ')
-
   $mdt.each | $mdt | {
     # For each MDT on this MDS
     $index = $mdt[index]
     $prefered_host = $mdt[prefered_host]
     $scrub_schedule = $mdt[scrub_schedule]
+    $fsname = $mdt[fsname]
+    $shared_mdt_mgs = $mdt[shared_mdt_mgs]
+
+    $service_nodes_str = join(prefix($mdt[service_nodes], '--servicenode '), ' ')
+    $mgs_nodes_str = join(prefix($mdt[mgs_service_nodes], '--mgsnode '), ' ')
 
     if($scrub_schedule and $prefered_host == $::hostname){
       file { "/etc/cron.d/scrub-MDT${index}.cron":
@@ -22,7 +23,7 @@ class lustre::mds(
         owner   => 'root',
         group   => 'root',
         mode    => '0644',
-        content => "${scrub_schedule} root /usr/sbin/zpool scrub ${lustre::server::fsname}-mdt${index}\n";
+        content => "${scrub_schedule} root /usr/sbin/zpool scrub ${fsname}-mdt${index}\n";
       }
     }
 
@@ -43,54 +44,74 @@ class lustre::mds(
 -o cachefile=none \
 -o ashift=${ashift} \
 -O compression=${compression} \
-${lustre::server::fsname}-mdt${index} \
+${fsname}-mdt${index} \
 ${format_str}",
       unless  => ['/usr/bin/test ! -f /tmp/puppet_can_erase',
                   "/usr/sbin/blkid ${drives_str} | /usr/bin/grep zfs"],
       require => Class['luks'],
-    }
-    ~> exec { "Formating the MDT${index} with Lustre":
-      command     => "/usr/sbin/mkfs.lustre \
+    } ~>
+    if($shared_mdt_mgs == true){
+      # shared MGS/MDT
+      exec { "Formating the MDT${index} with Lustre":
+        command     => "/usr/sbin/mkfs.lustre \
 --backfstype=zfs \
---fsname=${lustre::server::fsname} \
+--fsname=${fsname} \
+--mgs \
 --mdt \
 --index=${index} \
 ${service_nodes_str} \
 ${mgs_nodes_str} \
-${lustre::server::fsname}-mdt${index}/mdt${index}",
-      refreshonly => true,
-      onlyif      => '/usr/bin/test -f /tmp/puppet_can_erase',
+${fsname}-mdt${index}/mdt${index}",
+        refreshonly => true,
+        onlyif      => '/usr/bin/test -f /tmp/puppet_can_erase',
+      }
+    }
+    else {
+      # standalone MDT
+      exec { "Formating the MDT${index} with Lustre":
+        command     => "/usr/sbin/mkfs.lustre \
+--backfstype=zfs \
+--fsname=${fsname} \
+--mdt \
+--index=${index} \
+${service_nodes_str} \
+${mgs_nodes_str} \
+${fsname}-mdt${index}/mdt${index}",
+        refreshonly => true,
+        onlyif      => '/usr/bin/test -f /tmp/puppet_can_erase',
+      }
     }
     -> file { "/mnt/mdt${index}":
       ensure => 'directory',
+      before => Service['corosync'],
     }
-    -> cs_primitive { "ZFS_MDT${index}":
+    -> cs_primitive { "${fsname}_ZFS_MDT${index}":
       primitive_class => 'ocf',
       primitive_type  => 'ZFS',
       provided_by     => 'heartbeat',
-      parameters      => { 'pool' => "${lustre::server::fsname}-mdt${index}", 'importforce' => true },
+      parameters      => { 'pool' => "${fsname}-mdt${index}", 'importforce' => true },
       operations      => {
         'start'   => { 'timeout' => '600s' },
         'stop'    => { 'timeout' => '600s' },
         'monitor' => { 'timeout' => '300s', 'interval' => '60s' },
       },
     }
-    -> cs_primitive { "lustre_MDT${index}":
+    -> cs_primitive { "${fsname}_lustre_MDT${index}":
       primitive_class => 'ocf',
       primitive_type  => 'Lustre',
       provided_by     => 'lustre',
-      parameters      => { 'target' => "${lustre::server::fsname}-mdt${index}/mdt${index}", 'mountpoint' => "/mnt/mdt${index}" },
+      parameters      => { 'target' => "${fsname}-mdt${index}/mdt${index}", 'mountpoint' => "/mnt/mdt${index}" },
       operations      => {
         'start'   => { 'timeout' => '600s' },
         'stop'    => { 'timeout' => '600s' },
         'monitor' => { 'timeout' => '300s' , 'interval' => '60s' },
       },
     }
-    -> cs_group { "MDT${index}":
-      primitives => ["ZFS_MDT${index}", "lustre_MDT${index}"]
+    -> cs_group { "${fsname}_MDT${index}":
+      primitives => ["${fsname}_ZFS_MDT${index}", "${fsname}_lustre_MDT${index}"]
     }
     -> cs_location { "prefered_host_MDT${index}":
-      primitive => "MDT${index}",
+      primitive => "${fsname}_MDT${index}",
       node_name => $prefered_host,
       score     => '50',
     }

@@ -1,20 +1,20 @@
 class lustre::oss(
   $ost,
-  $service_nodes,
-  $raid_level = 'raidz3',
   $ashift = '12',
   $compression = 'lz4',
 ){
   include lustre::server
-
-  $service_nodes_str = join(prefix($service_nodes, '--servicenode '), ' ')
-  $mgs_nodes_str = join(prefix(hiera(lustre::mgs::service_nodes), '--mgsnode '), ' ')
 
   $ost.each | $ost | {
     # For each OST on this OSS
     $index = $ost[index]
     $prefered_host = $ost[prefered_host]
     $scrub_schedule = $ost[scrub_schedule]
+    $fsname = $ost[fsname]
+    $raid_level = $ost[raid_level],
+
+    $service_nodes_str = join(prefix($ost[oss_service_nodes], '--servicenode '), ' ')
+    $mgs_nodes_str = join(prefix($ost[mgs_service_nodes], '--mgsnode '), ' ')
 
     if($scrub_schedule and $prefered_host == $::hostname){
       file { "/etc/cron.d/scrub-OST${index}.cron":
@@ -22,7 +22,7 @@ class lustre::oss(
         owner   => 'root',
         group   => 'root',
         mode    => '0644',
-        content => "${scrub_schedule} root /usr/sbin/zpool scrub ${lustre::server::fsname}-ost${index}\n";
+        content => "${scrub_schedule} root /usr/sbin/zpool scrub ${fsname}-ost${index}\n";
       }
     }
 
@@ -46,7 +46,7 @@ class lustre::oss(
 -o cachefile=none \
 -o ashift=${ashift} \
 -O compression=${compression} \
-${lustre::server::fsname}-ost${index} \
+${fsname}-ost${index} \
 ${format_str}",
       unless  => ['/usr/bin/test ! -f /tmp/puppet_can_erase',
                   "/usr/sbin/blkid ${drives_str} | /usr/bin/grep zfs"],
@@ -55,12 +55,12 @@ ${format_str}",
     ~> exec { "Formating the OST${index} with Lustre":
       command     => "/usr/sbin/mkfs.lustre \
 --backfstype=zfs \
---fsname=${lustre::server::fsname} \
+--fsname=${fsname} \
 --ost \
 --index=${index} \
 ${service_nodes_str} \
 ${mgs_nodes_str} \
-${lustre::server::fsname}-ost${index}/ost${index}",
+${fsname}-ost${index}/ost${index}",
       refreshonly => true,
       onlyif      => '/usr/bin/test -f /tmp/puppet_can_erase',
     }
@@ -69,7 +69,7 @@ ${lustre::server::fsname}-ost${index}/ost${index}",
       primitive_class => 'ocf',
       primitive_type  => 'ZFS',
       provided_by     => 'heartbeat',
-      parameters      => { 'pool' => "${lustre::server::fsname}-ost${index}", 'importforce' => true },
+      parameters      => { 'pool' => "${fsname}-ost${index}", 'importforce' => true },
       operations      => {
         'start'   => { 'timeout' => '600s' },
         'stop'    => { 'timeout' => '600s' },
@@ -80,7 +80,7 @@ ${lustre::server::fsname}-ost${index}/ost${index}",
       primitive_class => 'ocf',
       primitive_type  => 'Lustre',
       provided_by     => 'lustre',
-      parameters      => { 'target' => "${lustre::server::fsname}-ost${index}/ost${index}", 'mountpoint' => "/mnt/ost${index}" },
+      parameters      => { 'target' => "${fsname}-ost${index}/ost${index}", 'mountpoint' => "/mnt/ost${index}" },
       operations      => {
         'start'   => { 'timeout' => '600s' },
         'stop'    => { 'timeout' => '600s' },
