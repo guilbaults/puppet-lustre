@@ -11,13 +11,13 @@ class lustre::oss(
     $prefered_host = $ost[prefered_host]
     $scrub_schedule = $ost[scrub_schedule]
     $fsname = $ost[fsname]
-    $raid_level = $ost[raid_level],
+    $raid_level = $ost[raid_level]
 
     $service_nodes_str = join(prefix($ost[oss_service_nodes], '--servicenode '), ' ')
     $mgs_nodes_str = join(prefix($ost[mgs_service_nodes], '--mgsnode '), ' ')
 
     if($scrub_schedule and $prefered_host == $::hostname){
-      file { "/etc/cron.d/scrub-OST${index}.cron":
+      file { "/etc/cron.d/scrub-${fsname}-OST${index}.cron":
         ensure  => present,
         owner   => 'root',
         group   => 'root',
@@ -65,7 +65,7 @@ ${fsname}-ost${index}/ost${index}",
       onlyif      => '/usr/bin/test -f /tmp/puppet_can_erase',
     }
     -> file { "/mnt/ost${index}": ensure => 'directory' }
-    -> cs_primitive { "ZFS_OST${index}":
+    -> cs_primitive { "ZFS_${fsname}_OST${index}":
       primitive_class => 'ocf',
       primitive_type  => 'ZFS',
       provided_by     => 'heartbeat',
@@ -76,7 +76,7 @@ ${fsname}-ost${index}/ost${index}",
         'monitor' => { 'timeout' => '300s', 'interval' => '60s' },
       },
     }
-    -> cs_primitive { "lustre_OST${index}":
+    -> cs_primitive { "lustre_${fsname}_OST${index}":
       primitive_class => 'ocf',
       primitive_type  => 'Lustre',
       provided_by     => 'lustre',
@@ -87,11 +87,11 @@ ${fsname}-ost${index}/ost${index}",
         'monitor' => { 'timeout' => '300s', interval => '60s', },
       },
     }
-    -> cs_group { "OST${index}":
-      primitives => ["ZFS_OST${index}", "lustre_OST${index}"]
+    -> cs_group { "${fsname}_OST${index}":
+      primitives => ["ZFS_${fsname}_OST${index}", "lustre_${fsname}_OST${index}"]
     }
-    -> cs_location { "prefered_host_OST${index}":
-      primitive => "OST${index}",
+    -> cs_location { "prefered_host_${fsname}_OST${index}":
+      primitive => "${fsname}_OST${index}",
       node_name => $prefered_host,
       score     => '50',
     }
