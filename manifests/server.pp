@@ -109,7 +109,27 @@ options zfs zfs_vdev_sync_read_max_active=16
         'pcmk_status_retries'  => 10,
       },
     }
+    -> cs_location { "ipmi-poweroff-${name}-location":
+      primitive => "ipmi-poweroff-${name}",
+      node_name => $name,
+      score     => '-INFINITY',
+    }
   }
+
+#  cs_primitive { 'ib0-healthy':
+#    primitive_class => 'ocf',
+#    primitive_type  => 'ethmonitor',
+#    provided_by     => 'heartbeat',
+#    parameters      => { 'interface' => 'ib0' ,'infiniband_device' => 'mlx5_0' },
+#    operations      => {
+#      'monitor' => { 'timeout' => '30s' , 'interval' => '30s' },
+#    },
+#  }
+#  cs_clone { 'ib0-healthy-clone' :
+#    ensure    => present,
+#    primitive => 'ib0-healthy',
+#    require   => Cs_primitive['ib0-healthy'],
+#  }
 
   cs_rsc_defaults { 'resource-stickiness' :
     value => '100',

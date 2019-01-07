@@ -107,6 +107,25 @@ ${fsname}-mdt${index}/mdt${index}",
         'monitor' => { 'timeout' => '300s' , 'interval' => '60s' },
       },
     }
+#    -> cs_location { "${fsname}_MDT${index}_ib0":
+#      primitive => "${fsname}_ZFS_MDT${index}",
+#      rules     => [
+#        { "only_if_ib0_up_${fsname}_MDT${index}" => {
+#          'score'      => '-INFINITY',
+#          'boolean-op' => 'or',
+#          'expression' => [
+#              { 'attribute' => 'ib0-healthy',
+#                'operation' => 'ne',
+#                'value'     => 0,
+#              },
+#              { 'attribute' => 'ib0-healthy',
+#                'operation' => 'not_defined',
+#              },
+#            ],
+#          },
+#        },
+#      ],
+#    }
     -> cs_group { "${fsname}_MDT${index}":
       primitives => ["${fsname}_ZFS_MDT${index}", "${fsname}_lustre_MDT${index}"]
     }
