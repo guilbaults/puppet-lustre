@@ -17,7 +17,7 @@ class lustre::mds(
     $service_nodes_str = join(prefix($mdt[service_nodes], '--servicenode '), ' ')
     $mgs_nodes_str = join(prefix($mdt[mgs_service_nodes], '--mgsnode '), ' ')
 
-    if($scrub_schedule and $prefered_host == $::hostname){
+    if($scrub_schedule and $prefered_host == $::fqdn){
       file { "/etc/cron.d/scrub-MDT${index}.cron":
         ensure  => present,
         owner   => 'root',

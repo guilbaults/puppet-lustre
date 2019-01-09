@@ -16,7 +16,7 @@ class lustre::oss(
     $service_nodes_str = join(prefix($ost[oss_service_nodes], '--servicenode '), ' ')
     $mgs_nodes_str = join(prefix($ost[mgs_service_nodes], '--mgsnode '), ' ')
 
-    if($scrub_schedule and $prefered_host == $::hostname){
+    if($scrub_schedule and $prefered_host == $::fqdn){
       file { "/etc/cron.d/scrub-${fsname}-OST${index}.cron":
         ensure  => present,
         owner   => 'root',
@@ -36,7 +36,7 @@ class lustre::oss(
     }
     $drives_str = join($drives_array, ' ')
 
-    exec { "Creating OST${index} pool with ZFS":
+    exec { "Creating OST${index} pool with ZFS for ${fsname}":
       command => "/usr/sbin/zpool create \
 -f \
 -O recordsize=1024k \
@@ -52,7 +52,7 @@ ${format_str}",
                   "/usr/sbin/blkid ${drives_str} | /usr/bin/grep zfs"],
       require => Class['luks'],
     }
-    ~> exec { "Formating the OST${index} with Lustre":
+    ~> exec { "Formating the OST${index} with Lustre for ${fsname}":
       command     => "/usr/sbin/mkfs.lustre \
 --backfstype=zfs \
 --fsname=${fsname} \
@@ -64,7 +64,7 @@ ${fsname}-ost${index}/ost${index}",
       refreshonly => true,
       onlyif      => '/usr/bin/test -f /tmp/puppet_can_erase',
     }
-    -> file { "/mnt/ost${index}": ensure => 'directory' }
+    -> file { "/mnt/${fsname}_ost${index}": ensure => 'directory' }
     -> cs_primitive { "ZFS_${fsname}_OST${index}":
       primitive_class => 'ocf',
       primitive_type  => 'ZFS',
@@ -80,7 +80,7 @@ ${fsname}-ost${index}/ost${index}",
       primitive_class => 'ocf',
       primitive_type  => 'Lustre',
       provided_by     => 'lustre',
-      parameters      => { 'target' => "${fsname}-ost${index}/ost${index}", 'mountpoint' => "/mnt/ost${index}" },
+      parameters      => { 'target' => "${fsname}-ost${index}/ost${index}", 'mountpoint' => "/mnt/${fsname}_ost${index}" },
       operations      => {
         'start'   => { 'timeout' => '600s' },
         'stop'    => { 'timeout' => '600s' },
