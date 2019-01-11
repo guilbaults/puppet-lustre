@@ -93,13 +93,23 @@ options zfs zfs_vdev_sync_read_max_active=16
     $user = $device[user]
     $password = $device[password]
     $ipaddr = $device[ipaddr]
-    cs_stonith { "ipmi-poweroff-${name}" :
+    file { "/root/.passwd-ipmi-${name}.sh":
+      show_diff => false,
+      owner     => 'root',
+      group     => 'root',
+      mode      => '0700',
+      before    => Service['corosync'],
+      content   => "#!/bin/bash
+echo $password
+"
+    }
+    -> cs_stonith { "ipmi-poweroff-${name}" :
       ensure         => present,
       primitive_type => 'fence_ipmilan',
       device_options => {
         'pcmk_host_list'       => $name,
         'login'                => $user,
-        'passwd'               => $password,
+        'passwd_script'        => "/root/.passwd-ipmi-${name}.sh",
         'ipaddr'               => $ipaddr,
         'lanplus'              => true,
         'pcmk_reboot_retries'  => 10,
