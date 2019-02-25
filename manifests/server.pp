@@ -177,4 +177,14 @@ class lustre::server::nrpe(){
       ensure => present,
       source => 'puppet:///modules/lustre/check_zfs',
   }
+  nrpe::command {
+    'check_targets':
+      ensure  => present,
+      command => 'check_targets';
+  }
+  nrpe::plugin {
+    'check_targets':
+      ensure => present,
+      source => 'puppet:///modules/lustre/check_targets',
+  }
 }

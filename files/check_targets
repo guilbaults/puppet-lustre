@@ -1,0 +1,83 @@
+#!/usr/bin/python
+import sys
+import re
+import os
+import socket
+
+short_hostname = re.search('(.*?)\..*', socket.gethostname()).group(1)
+
+critical = []
+warning= []
+ok = []
+local_targets = []
+foreign_targets = []
+
+def get_target_path(target_name):
+    if 'MDT' in target_name:
+        target_path = '/proc/fs/lustre/mdt/' + target_name
+    else:
+        target_path = '/proc/fs/lustre/obdfilter/' + target_name
+    return target_path
+
+with open('/etc/ldev.conf', 'r') as ldev:
+    for line in ldev:
+        match = re.search('^(.*) (.*) (.*) .*' ,line)
+        local = match.group(1)
+        foreign = match.group(2)
+        target = match.group(3)
+        if short_hostname == local:
+            local_targets.append(target)
+        if short_hostname == foreign:
+            foreign_targets.append(target)
+
+for target in local_targets:
+    target_path = get_target_path(target)
+    if os.path.isdir(target_path) == False:
+        # this local target is not mounted, critical
+        critical.append(
+            'local target {0} is not mounted here'.format(target))
+    else:
+        with open(target_path + '/recovery_status', 'r') as recovery_status:
+            for line in recovery_status:
+                match = re.search('status: (.*)', line)
+                if match:
+                    if match.group(1) == 'COMPLETE':
+                        ok.append(
+                            'local target {0} is mounted'.format(target))
+                    else:
+                        critical.append(
+                            'local target {0} is in {1}'.format(
+                            target, match.group(1)))
+
+for target in foreign_targets:
+    target_path = get_target_path(target)
+    if os.path.isdir(target_path):
+        # This OSS have a foreign OST
+        with open(target_path + '/recovery_status', 'r') as recovery_status:
+            for line in recovery_status:
+                match = re.search('status: (.*)', line)
+                if match:
+                    if match.group(1) == 'COMPLETE':
+                        warning.append(
+                            'foreign target {0} is mounted'.format(target))
+                    else:
+                        critical.append(
+                            'foreign target {0} is in {1}'.format(
+                            target, match.group(1)))
+
+msgs = critical + warning + ok
+if len(critical) >= 1:
+    print 'CRITICAL: Lustre target(s) are unmounted on this OSS, in recovery or simply unbalanced'
+    for msg in msgs:
+        print msg
+    sys.exit(2)
+elif len(warning) >= 1:
+    print 'WARNING: Lustre target(s) are unbalanced'
+    for msg in msgs:
+        print msg
+    sys.exit(1)
+else:
+    print 'OK: Lustre targets are mounted correctly'
+    for msg in msgs:
+        print msg
+    sys.exit(0)
