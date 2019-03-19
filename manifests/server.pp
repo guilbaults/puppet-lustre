@@ -187,6 +187,11 @@ class lustre::server::nrpe(){
       ensure => present,
       source => 'puppet:///modules/lustre/check_targets',
   }
+  nrpe::command {
+    'check_lustre_healthy':
+      ensure  => present,
+      command => 'check_lustre_healthy';
+  }
   nrpe::plugin {
     'check_lustre_healthy':
       ensure => present,
