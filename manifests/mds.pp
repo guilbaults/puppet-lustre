@@ -30,28 +30,28 @@ class lustre::mds(
 
     if($hsm_max_requests){
       # set and verify once in a while that HSM is enabled
-      file { "/etc/cron.d/hsm-MDT${index}.cron":
+      file { "/etc/cron.d/${fsname}-hsm-MDT${index}.cron":
         ensure  => present,
         owner   => 'root',
         group   => 'root',
         mode    => '0644',
-        content => "0 * * * * root /root/hsm-MDT${index}.sh";
+        content => "0 * * * * root /root/${fsname}-hsm-MDT${index}.sh";
       }
-      file { "/root/hsm-MDT${index}.sh":
+      file { "/root/${fsname}-hsm-MDT${index}.sh":
         ensure  => present,
         owner   => 'root',
         group   => 'root',
         mode    => '0744',
         content => "#!/bin/bash
-if ! test -d /proc/fs/lustre/mdt/lustre03-MDT000${index} ; then
+if ! test -d /proc/fs/lustre/mdt/${fsname}-MDT000${index} ; then
   # not mounted here
   exit 0
 fi
 
-if ! lctl get_param mdt.lustre03-MDT000${index}.hsm_control | grep enabled > /dev/null; then
-  lctl set_param mdt.lustre03-MDT000${index}.hsm_control=enabled
+if ! lctl get_param mdt.${fsname}-MDT000${index}.hsm_control | grep enabled > /dev/null; then
+  lctl set_param mdt.${fsname}-MDT000${index}.hsm_control=enabled
 fi
-lctl set_param mdt.lustre03-MDT000${index}.hsm.max_requests=${hsm_max_requests}";
+lctl set_param mdt.${fsname}-MDT000${index}.hsm.max_requests=${hsm_max_requests}";
       }
     }
 
