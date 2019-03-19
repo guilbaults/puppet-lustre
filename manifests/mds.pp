@@ -13,6 +13,7 @@ class lustre::mds(
     $scrub_schedule = $mdt[scrub_schedule]
     $fsname = $mdt[fsname]
     $shared_mdt_mgs = $mdt[shared_mdt_mgs]
+    $hsm_max_requests = $mdt[hsm_max_requests]
 
     $service_nodes_str = join(prefix($mdt[service_nodes], '--servicenode '), ' ')
     $mgs_nodes_str = join(prefix($mdt[mgs_service_nodes], '--mgsnode '), ' ')
@@ -24,6 +25,33 @@ class lustre::mds(
         group   => 'root',
         mode    => '0644',
         content => "${scrub_schedule} root /usr/sbin/zpool scrub ${fsname}-mdt${index}\n";
+      }
+    }
+
+    if($hsm_max_requests){
+      # set and verify once in a while that HSM is enabled
+      file { "/etc/cron.d/hsm-MDT${index}.cron":
+        ensure  => present,
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0644',
+        content => "0 * * * * root /root/hsm-MDT${index}.sh";
+      }
+      file { "/root/hsm-MDT${index}.sh":
+        ensure  => present,
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0744',
+        content => "#!/bin/bash
+if ! test -d /proc/fs/lustre/mdt/lustre03-MDT000${index} ; then
+  # not mounted here
+  exit 0
+fi
+
+if ! lctl get_param mdt.lustre03-MDT000${index}.hsm_control | grep enabled > /dev/null; then
+  lctl set_param mdt.lustre03-MDT000${index}.hsm_control=enabled
+fi
+lctl set_param mdt.lustre03-MDT000${index}.hsm.max_requests=${hsm_max_requests}";
       }
     }
 
