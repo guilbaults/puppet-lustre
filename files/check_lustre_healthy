@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if grep healthy /sys/fs/lustre/health_check > /dev/null; then
+  echo OK - Lustre is healthy
+  exit 0
+else
+  echo CRITICAL - Lustre is not healthy
+  exit 2
+fi
