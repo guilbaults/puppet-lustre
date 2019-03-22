@@ -169,6 +169,56 @@ class lustre::server::patch_monitor() {
   }
 }
 
+# For clean shutdown/reboot
+# Based on LU-8384, patched in 2.13
+class lustre::server::systemd(){
+  file { '/etc/systemd/system/lustre.service':
+    notify  => Service['lustre'],
+    content => '[Unit]
+Description=Lustre shutdown
+After=network.target network-online.target lnet.service
+DefaultDependencies=false
+Conflicts=umount.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/bin/true
+ExecStop=/usr/bin/umount -a -t lustre
+ExecStop=/usr/sbin/lustre_rmmod
+
+[Install]
+WantedBy=sysinit.target
+WantedBy=final.target',
+  }
+  -> service { 'lustre':
+    ensure => 'running',
+    enable => true,
+  }
+  # patch lnet for clean reboot/shutdown
+  file { '/usr/lib/systemd/system/lnet.service':
+    notify  => Service['lnet'],
+    content => '[Unit]
+Description=lnet management
+
+Requires=network-online.target
+After=network-online.target openibd.service rdma.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStop=/usr/sbin/lustre_rmmod ptlrpc
+ExecStop=/usr/sbin/lustre_rmmod libcfs ldiskfs
+
+[Install]
+WantedBy=multi-user.target',
+  }
+  -> service { 'lnet':
+    ensure => 'running',
+    enable => true,
+  }
+}
+
 class lustre::server::nrpe(){
   nrpe::command {
     'check_zfs':
