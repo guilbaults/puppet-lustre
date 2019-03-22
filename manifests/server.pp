@@ -3,7 +3,8 @@ class lustre::server(
   # This heartbeat script is under GPL license and not included directly in
   # this module, OS native repo will have this script in the future.
   $zfs_heartbeat_script='https://raw.githubusercontent.com/ClusterLabs/resource-agents/master/heartbeat/ZFS',
-  $lnet_firewall=['0.0.0.0/0']
+  $lnet_firewall=['0.0.0.0/0'],
+  $module_options=['options lnet networks=o2ib(ib0)'],
 ){
   include lustre
   include lustre::ldev
@@ -60,14 +61,16 @@ options zfs zfs_vdev_sync_read_max_active=16
     }
   }
 
-  # TODO put in hiera a list of lustre/lnet parameters
+  $lustre_conf_content = join($module_options, '
+')
   file { '/etc/modprobe.d/lustre.conf':
-    content => 'options lnet networks=o2ib(ib0)',
+    content => $lustre_conf_content,
   }
   exec { 'modprobe lustre':
     command => '/usr/sbin/modprobe lustre',
     unless  => '/usr/sbin/lsmod | /usr/bin/grep lustre',
-    require => [Exec['modprobe zfs'], Package['lustre'], Class['network']],
+    require => [Exec['modprobe zfs'], Package['lustre'], Class['network'],
+                File['/etc/modprobe.d/lustre.conf']],
     before  => Service['corosync'],
   }
   file { '/usr/lib/ocf/resource.d/heartbeat/ZFS':
