@@ -35,7 +35,7 @@ class lustre::mds(
         owner   => 'root',
         group   => 'root',
         mode    => '0644',
-        content => "0 * * * * root /root/${fsname}-hsm-MDT${index}.sh";
+        content => "0 * * * * root /root/${fsname}-hsm-MDT${index}.sh\n";
       }
       file { "/root/${fsname}-hsm-MDT${index}.sh":
         ensure  => present,
