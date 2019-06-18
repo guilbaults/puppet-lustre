@@ -165,3 +165,15 @@ ${fsname}-mdt${index}/mdt${index}",
   } # END of MDT $index
 }
 
+class lustre::mds::nrpe(){
+  nrpe::command {
+    'check_hsm':
+      ensure  => present,
+      command => 'check_hsm';
+  }
+  nrpe::plugin {
+    'check_hsm':
+      ensure => present,
+      source => 'puppet:///modules/lustre/check_hsm',
+  }
+}
