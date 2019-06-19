@@ -2,6 +2,14 @@ class lustre::oss(
   $ost,
   $ashift = '12',
   $compression = 'lz4',
+  $zfs_start_timeout = '600s',
+  $zfs_stop_timeout = '600s',
+  $zfs_monitor_timeout = '300s',
+  $zfs_monitor_interval = '60s',
+  $lustre_start_timeout = '600s',
+  $lustre_stop_timeout = '600s',
+  $lustre_monitor_timeout = '300s',
+  $lustre_monitor_interval = '60s',
 ){
   include lustre::server
 
@@ -71,9 +79,9 @@ ${fsname}-ost${index}/ost${index}",
       provided_by     => 'heartbeat',
       parameters      => { 'pool' => "${fsname}-ost${index}", 'importforce' => true },
       operations      => {
-        'start'   => { 'timeout' => '600s' },
-        'stop'    => { 'timeout' => '600s' },
-        'monitor' => { 'timeout' => '300s', 'interval' => '60s' },
+        'start'   => { 'timeout' => $zfs_start_timeout },
+        'stop'    => { 'timeout' => $zfs_stop_timeout },
+        'monitor' => { 'timeout' => $zfs_monitor_timeout, 'interval' => $zfs_monitor_interval },
       },
     }
     -> cs_primitive { "lustre_${fsname}_OST${index}":
@@ -82,9 +90,9 @@ ${fsname}-ost${index}/ost${index}",
       provided_by     => 'lustre',
       parameters      => { 'target' => "${fsname}-ost${index}/ost${index}", 'mountpoint' => "/mnt/${fsname}_ost${index}" },
       operations      => {
-        'start'   => { 'timeout' => '600s' },
-        'stop'    => { 'timeout' => '600s' },
-        'monitor' => { 'timeout' => '300s', interval => '60s', },
+        'start'   => { 'timeout' => $lustre_start_timeout },
+        'stop'    => { 'timeout' => $lustre_stop_timeout },
+        'monitor' => { 'timeout' => $lustre_monitor_timeout, 'interval' => $lustre_monitor_interval },
       },
     }
     -> cs_group { "${fsname}_OST${index}":
