@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# lfs check servers only works as root, not as the NRPE user
+CONN=$(/usr/bin/sudo /usr/bin/lfs check servers | grep -v active)
+
+if [[ $? -eq 1 ]] ; then
+  echo OK - Can reach all the MDTs and OSTs
+  exit 0
+else
+  echo CRITICAL - Could not reach at least one MDT or OST
+  echo "$CONN"
+  exit 2
+fi
