@@ -1,4 +1,4 @@
-rvm: 1.9.3
+rvm: 2.2.5
 notifications:
   email:
     - guilbaults@github.com
