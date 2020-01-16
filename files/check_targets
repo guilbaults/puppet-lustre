@@ -41,7 +41,7 @@ for target in local_targets:
             for line in recovery_status:
                 match = re.search('status: (.*)', line)
                 if match:
-                    if match.group(1) == 'COMPLETE':
+                    if match.group(1) == 'COMPLETE' or match.group(1) == 'INACTIVE':
                         ok.append(
                             'local target {0} is mounted'.format(target))
                     else:
