@@ -7,12 +7,12 @@ for line in $(lctl get_param mdd.*.changelog_size); do
     size=${BASH_REMATCH[2]}
     size_human=$(numfmt --to=iec-i --suffix=B $size)
     perfdata=" | ${size};$WARNING_SIZE;$CRITICAL_SIZE"
-    if [ $size -gt $WARNING_SIZE ]; then
-      echo "Warning - Changelog is too big on $mdt: $size_human $perfdata"
-      exit 1
-    elif [ $size -gt $CRITICAL_SIZE ]; then
+    if [ $size -gt $CRITICAL_SIZE ]; then
       echo "Critical - Changelog is too big in $mdt: $size_human $perfdata"
       exit 2
+    elif [ $size -gt $WARNING_SIZE ]; then
+      echo "Warning - Changelog is too big on $mdt: $size_human $perfdata"
+      exit 1
     else
       echo "OK - Changelog size on $mdt: $size_human $perfdata"
     fi
