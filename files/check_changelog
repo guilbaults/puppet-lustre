@@ -1,0 +1,22 @@
+#!/bin/bash
+for line in $(lctl get_param mdd.*.changelog_size); do
+  if [[ $line =~ mdd.(.*).changelog_size=(.*) ]]; then
+    mdt=${BASH_REMATCH[1]}
+    size=${BASH_REMATCH[2]}
+    size_human=$(numfmt --to=iec-i --suffix=B $size)
+    if [ $size -gt 10000000000 ]; then
+      echo "Warning - Changelog is too long on $mdt: $size_human"
+      exit 1
+    elif [ $size -gt 100000000000 ]; then
+      echo "Critical - Changelog is too long in $mdt: $size_human"
+      exit 2
+    else
+      echo "OK - Changelog length on $mdt: $size_human"
+    fi
+  else
+    echo "Error parsing changelog size"
+    exit 3
+  fi
+done
+
+exit 0
