@@ -1,0 +1,25 @@
+#!/bin/bash
+WARNING_SIZE=1000000000
+CRITICAL_SIZE=10000000000
+for line in $(lctl get_param mdd.*.changelog_size); do
+  if [[ $line =~ mdd.(.*).changelog_size=(.*) ]]; then
+    mdt=${BASH_REMATCH[1]}
+    size=${BASH_REMATCH[2]}
+    size_human=$(numfmt --to=iec-i --suffix=B $size)
+    perfdata=" | ${size};$WARNING_SIZE;$CRITICAL_SIZE"
+    if [ $size -gt $CRITICAL_SIZE ]; then
+      echo "Critical - Changelog is too big in $mdt: $size_human $perfdata"
+      exit 2
+    elif [ $size -gt $WARNING_SIZE ]; then
+      echo "Warning - Changelog is too big on $mdt: $size_human $perfdata"
+      exit 1
+    else
+      echo "OK - Changelog size on $mdt: $size_human $perfdata"
+    fi
+  else
+    echo "Error parsing changelog size"
+    exit 3
+  fi
+done
+
+exit 0

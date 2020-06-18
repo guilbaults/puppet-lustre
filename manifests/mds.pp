@@ -176,4 +176,14 @@ class lustre::mds::nrpe(){
       ensure => present,
       source => 'puppet:///modules/lustre/check_hsm',
   }
+  nrpe::command {
+    'check_changelog':
+      ensure  => present,
+      command => 'check_changelog';
+  }
+  nrpe::plugin {
+    'check_changelog':
+      ensure => present,
+      source => 'puppet:///modules/lustre/check_changelog',
+  }
 }
