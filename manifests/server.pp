@@ -15,7 +15,6 @@ class lustre::server(
     'lustre-osd-zfs-mount',
     'kmod-lustre',
     'lustre-resource-agents',
-    'fence-agents-all',
   ]:}
 
   exec { '/usr/bin/echo Warning, puppet is allowed to format drives':
@@ -106,10 +105,14 @@ options zfs zfs_vdev_sync_read_max_active=16
 echo $password
 "
     }
-    -> cs_stonith { "ipmi-poweroff-${name}" :
-      ensure         => present,
-      primitive_type => 'fence_ipmilan',
-      device_options => {
+    -> cs_primitive { "ipmi-poweroff-${name}" :
+      ensure          => present,
+      primitive_class => 'stonith',
+      primitive_type  => 'fence_ipmilan',
+      operations      => {
+        'monitor'     => { 'interval' => '60s'},
+      },
+      parameters      => {
         'pcmk_host_list'       => $name,
         'login'                => $user,
         'passwd_script'        => "/root/.passwd-ipmi-${name}.sh",
