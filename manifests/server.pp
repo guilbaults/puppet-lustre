@@ -142,7 +142,7 @@ echo $password
     value => false,
   }
   cs_rsc_defaults { 'batch-limit' :
-    value => '2',
+    value => '20',
   }
   cs_rsc_defaults { 'migration-limit' :
     value => '2',
