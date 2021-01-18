@@ -1,0 +1,8 @@
+#!/bin/bash
+if pcs status | grep stonith | grep Stopped > /dev/null; then
+  echo CRITICAL - Some stonith devices are stopped
+  exit 2
+else
+  echo OK - All stonith device are running
+  exit 0
+fi
