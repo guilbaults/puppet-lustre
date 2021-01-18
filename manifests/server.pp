@@ -253,10 +253,14 @@ class lustre::server::nrpe(){
       ensure => present,
       source => 'puppet:///modules/lustre/check_lustre_healthy',
   }
+  nrpe::command {
+    'check_pcs_stonith':
+      ensure  => present,
+      command => 'check_pcs_stonith';
+  }
   nrpe::plugin {
     'check_pcs_stonith':
       ensure => present,
       source => 'puppet:///modules/lustre/check_pcs_stonith',
   }
-
 }
