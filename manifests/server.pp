@@ -95,6 +95,41 @@ options zfs zfs_vdev_sync_read_max_active=16
     $user = $device[user]
     $password = $device[password]
     $ipaddr = $device[ipaddr]
+    $cipher = $device[cipher]
+    $hexadecimal_kg = $device[hexadecimal_kg]
+
+    if($cipher != undef and $hexadecimal_kg != undef){
+        # cipher and key are defined
+        $ipmi_params = {
+        'pcmk_host_list'       => $name,
+        'login'                => $user,
+        'passwd_script'        => "/root/.passwd-ipmi-${name}.sh",
+        'ipaddr'               => $ipaddr,
+        'hexadecimal_kg'       => $hexadecimal_kg,
+        'cipher'               => $cipher,
+        'lanplus'              => true,
+        'pcmk_reboot_retries'  => 10,
+        'pcmk_off_retries'     => 10,
+        'pcmk_list_retries'    => 10,
+        'pcmk_monitor_retries' => 10,
+        'pcmk_status_retries'  => 10,
+      }
+    }
+    else{
+        $ipmi_params = {
+        'pcmk_host_list'       => $name,
+        'login'                => $user,
+        'passwd_script'        => "/root/.passwd-ipmi-${name}.sh",
+        'ipaddr'               => $ipaddr,
+        'lanplus'              => true,
+        'pcmk_reboot_retries'  => 10,
+        'pcmk_off_retries'     => 10,
+        'pcmk_list_retries'    => 10,
+        'pcmk_monitor_retries' => 10,
+        'pcmk_status_retries'  => 10,
+      }
+    }
+
     file { "/root/.passwd-ipmi-${name}.sh":
       show_diff => false,
       owner     => 'root',
@@ -112,18 +147,7 @@ echo $password
       operations      => {
         'monitor'     => { 'interval' => '60s'},
       },
-      parameters      => {
-        'pcmk_host_list'       => $name,
-        'login'                => $user,
-        'passwd_script'        => "/root/.passwd-ipmi-${name}.sh",
-        'ipaddr'               => $ipaddr,
-        'lanplus'              => true,
-        'pcmk_reboot_retries'  => 10,
-        'pcmk_off_retries'     => 10,
-        'pcmk_list_retries'    => 10,
-        'pcmk_monitor_retries' => 10,
-        'pcmk_status_retries'  => 10,
-      },
+      parameters      => $ipmi_params,
     }
     -> cs_location { "ipmi-poweroff-${name}-location":
       primitive => "ipmi-poweroff-${name}",
