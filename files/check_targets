@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import sys
 import re
 import os
@@ -67,17 +67,17 @@ for target in foreign_targets:
 
 msgs = critical + warning + ok
 if len(critical) >= 1:
-    print 'CRITICAL: Lustre target(s) are unmounted on this OSS, in recovery or simply unbalanced'
+    print('CRITICAL: Lustre target(s) are unmounted on this OSS, in recovery or simply unbalanced')
     for msg in msgs:
-        print msg
+        print(msg)
     sys.exit(2)
 elif len(warning) >= 1:
-    print 'WARNING: Lustre target(s) are unbalanced'
+    print('WARNING: Lustre target(s) are unbalanced')
     for msg in msgs:
-        print msg
+        print(msg)
     sys.exit(1)
 else:
-    print 'OK: Lustre targets are mounted correctly'
+    print('OK: Lustre targets are mounted correctly')
     for msg in msgs:
-        print msg
+        print(msg)
     sys.exit(0)
