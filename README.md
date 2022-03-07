@@ -135,7 +135,7 @@ corosync::stonith:
 ## Usage
 ## Reference
 ## Limitations
-This is currently only support Centos7
+This is currently only support Centos7 and RockyLinux8
 ## Build Status
 The current state of the automatic puppet syntax check:
 
