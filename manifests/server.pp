@@ -5,6 +5,7 @@ class lustre::server(
   $zfs_heartbeat_script='https://raw.githubusercontent.com/ClusterLabs/resource-agents/master/heartbeat/ZFS',
   $lnet_firewall=['0.0.0.0/0'],
   $module_options=['options lnet networks=o2ib(ib0)'],
+  $batch_limit='20',
 ){
   include lustre
   include lustre::ldev
@@ -166,7 +167,7 @@ echo $password
     value => false,
   }
   cs_rsc_defaults { 'batch-limit' :
-    value => '20',
+    value => $batch_limit,
   }
   cs_rsc_defaults { 'migration-limit' :
     value => '2',
