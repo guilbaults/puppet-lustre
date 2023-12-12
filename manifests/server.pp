@@ -281,6 +281,7 @@ class lustre::server::nrpe(){
   nrpe::command {
     'check_pcs_stonith':
       ensure  => present,
+      sudo    => true,
       command => 'check_pcs_stonith';
   }
   nrpe::plugin {
