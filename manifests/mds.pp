@@ -165,7 +165,10 @@ ${fsname}-mdt${index}/mdt${index}",
   } # END of MDT $index
 }
 
-class lustre::mds::nrpe(){
+class lustre::mds::nrpe(
+  $changelog_warn = 15000000000,
+  $changelog_crit = 30000000000,
+){
   nrpe::command {
     'check_hsm':
       ensure  => present,
@@ -184,6 +187,9 @@ class lustre::mds::nrpe(){
   nrpe::plugin {
     'check_changelog':
       ensure => present,
-      source => 'puppet:///modules/lustre/check_changelog',
+      content => epp('lustre/check_changelog', {
+        'changelog_warn' => $changelog_warn,
+        'changelog_crit' => $changelog_crit,
+      })
   }
 }

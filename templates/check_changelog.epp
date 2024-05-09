@@ -1,6 +1,6 @@
 #!/bin/bash
-WARNING_SIZE=15000000000
-CRITICAL_SIZE=30000000000
+WARNING_SIZE=<%= $changelog_warn %>
+CRITICAL_SIZE=<%= $changelog_crit %>
 for line in $(lctl get_param mdd.*.changelog_size); do
   if [[ $line =~ mdd.(.*).changelog_size=(.*) ]]; then
     mdt=${BASH_REMATCH[1]}
