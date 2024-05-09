@@ -11,7 +11,7 @@ zpool status|egrep 'pool:|state:|scan:|to go'|tr '\n' ' '|sed 's/[a-z]*://g'|sed
 
 COMMENT=$(cat /tmp/check_zfs.tmp)
 NAGIOS_STATE=0 # nagios ok
-STATES="DEGRADED FAULTED OFFLINE REMOVED UNAVAIL"
+STATES="SUSPENDED DEGRADED FAULTED OFFLINE REMOVED UNAVAIL"
 
 for STATE in $STATES; do
     echo $COMMENT|grep -q $STATE
