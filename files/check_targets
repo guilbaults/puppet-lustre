@@ -4,7 +4,7 @@ import re
 import os
 import socket
 
-short_hostname = re.search('(.*?)\..*', socket.gethostname()).group(1)
+short_hostname = socket.gethostname().split('.')[0]
 
 critical = []
 warning= []
