@@ -2,7 +2,7 @@ class lustre::mds(
   $mdt,
   $raid_level = 'mirror',
   $ashift = '12',
-  $compression = 'lz4',
+  $compression = 'zstd',
 ){
   include lustre::server
 

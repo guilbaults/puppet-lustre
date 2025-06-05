@@ -4,7 +4,7 @@ class lustre::mgs(
   $prefered_host,
   $raid_level = 'mirror',
   $ashift = '12',
-  $compression = 'lz4',
+  $compression = 'zstd',
   $scrub_schedule = '0 0 1 * *',
 ){
   include lustre::server

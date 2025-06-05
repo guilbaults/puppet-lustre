@@ -1,7 +1,7 @@
 class lustre::oss(
   $ost,
   $ashift = '12',
-  $compression = 'lz4',
+  $compression = 'zstd',
   $zfs_start_timeout = '600s',
   $zfs_stop_timeout = '600s',
   $zfs_monitor_timeout = '300s',
